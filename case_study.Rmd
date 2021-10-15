@@ -2,13 +2,13 @@
 title: "case_study"
 author: "Fang Liu (fl2569)"
 date: "10/114/2021"
-output: github_document
+output: html_document
 ---
 
-```{r eval=FALSE}
+```{r set_up}
 #tidyverse pacakge (dplyr, ggplot2, etc)
 library(tidyverse)
-library(dyplyr)
+library(dplyr)
 
 #figure size options
 knitr::opts_chunk$set(
@@ -35,6 +35,8 @@ library(p8105.datasets)
 data(nyc_airbnb)
 ```
 
+
+Possible questions:
 * How many rentals are there? of what type? in what places?
 * Is price correlated with review score? 
 * Which neighborhood is most popular? Most expensive? 
@@ -52,12 +54,13 @@ nyc_airbnb =
 
 ```{r}
 nyc_airbnb %>% 
-  janitor::tabyl(borough, room_type) 
+  janitor::tabyl(borough, room_type) #creates a 2-way frequency table 
 ```
+
 
 # Which neighborhood is most expensive? 
 
-# Price vs. borough 
+### Price vs. borough 
 ```{r most_expensive}
 example =
   nyc_airbnb %>%
@@ -72,64 +75,64 @@ example =
 example  
 ```
 
-# price vs. ratings
+#### price vs. ratings
 ```{r most_popular}
 example2 =
   nyc_airbnb %>% 
-  select(borough, price, review_scores_location) %>% 
+  select(borough, price, stars) %>% 
   drop_na() %>% 
   group_by(borough) %>% 
   summarize(
     mean_price = mean(price),
-    mean_review = mean(star)
-  ) %>% 
-  arrange(mean_review, mean_price)
+    mean_review = mean(stars)
+  ) %>% #the summarization is based on the groupings
+  arrange(mean_review)
 
-example2  
+example2 
 ```
 
 # price vs. ratings
 ```{r}
 nyc_airbnb %>% 
-  ggplot(aes(x= review_scores_location, y=price))+
+  ggplot(aes(x = stars, y = price)) +
   geom_point()
 ```
 
-Which neibhorhood in manhatten is the most expensive?
+Which neighborhood in Manhattan is the most expensive?
 ```{r}
-example =
+pricey_neighborhood =
   nyc_airbnb %>%
-  filter(borough == "Manhaten") %>% 
+  filter(borough == "Manhattan") %>% 
   drop_na() %>% 
   group_by(neighbourhood) %>% 
-  summarize(
+  summarize( #summarize the mean price for each neighbourood in Manhatten
     mean_price = mean(price)
   ) %>% 
   arrange(mean_price)
 
-example
+pricey_neighborhood
 ```
 
 
-`sample_n` gives us a random sample of size x
+`sample_n` gives us a random sample of size x. Show the price distribution. 
 ```{r}
 nyc_airbnb %>% 
   filter(price < 400) %>% 
-  sample_n(5000) %>% 
+  sample_n(1000) %>% 
   ggplot(aes(x = lat, y = long, color = price)) +
   geom_point()
 ```
 
-## retry leaflet
+## Using leaflet
 ```{r}
 library(leaflet)
 
+#create and use the pal color palette
 pal = colorNumeric("viridis", NULL)
-
 
 nyc_airbnb %>% 
   filter(price < 500) %>% 
-  sample_n(1000) %>% 
+  sample_n(500) %>% 
   leaflet() %>% 
   addTiles() %>% 
   addCircleMarkers(
@@ -137,10 +140,8 @@ nyc_airbnb %>%
 ```
 
 ### Website for references 
-[Intro to leaflet](https://teachdatascience.com/leaflet/)
+[Intro to leaflet](https://teachdatascience.com/leaflet/)  
 [Leaflet](https://rstudio.github.io/leaflet/) 
 
-
-
-
-
+**NOTE**: github doesn't offer interactive components
+If we want interactive components, we need to use `html` outputs. 
